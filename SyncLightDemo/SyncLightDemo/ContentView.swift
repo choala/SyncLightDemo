@@ -6,16 +6,54 @@
 //
 
 import SwiftUI
+import Firebase
 
 struct ContentView: View {
+    
+    let ref = Database.database().reference()
+    
+    @State private var lightOn: Bool = false
+    
+    var systemImageString: String {
+        lightOn ? "light.max" : "light.min"
+    }
+    
+    var lighteColor: Color {
+        lightOn ? .yellow : .gray
+    }
+    
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
+            Text("Light is")
+                .font(.title)
+            
+            Image(systemName: systemImageString)
+                .font(.largeTitle)
+                .foregroundColor(lighteColor)
+                .padding()
+            
+            Button {
+                lightOn.toggle()
+                ref.child("lightOn").setValue(lightOn)
+            } label: {
+                Text("Toggle Light")
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(lighteColor)
+            .padding()
         }
         .padding()
+        .onAppear {
+            observeLightState()
+        }
+    }
+    
+    func observeLightState() {
+        ref.child("lightOn").observe(.value) { snapshot in
+            if let value = snapshot.value as? Bool {
+                lightOn = value
+            }
+        }
     }
 }
 
